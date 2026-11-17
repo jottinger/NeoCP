@@ -58,6 +58,19 @@ The package installs two commands. `neocp` is the MCP server. `neocp-install` in
 
 If `python-rtmidi` fails to install with pip, use Python 3.10 to 3.12, or use uv. On Linux, install `libasound2-dev` and `libjack-dev` first.
 
+## Install from the source code on macOS
+
+You need [just](https://just.systems/) and [uv](https://docs.astral.sh/uv/).
+
+1. Clone the repository.
+2. Run:
+
+   ```bash
+   just install
+   ```
+
+The recipe checks the tools, installs NeoCP with Python 3.12, and runs `neocp-install`. To remove NeoCP, run `just uninstall`.
+
 ## Check the installation
 
 ```bash

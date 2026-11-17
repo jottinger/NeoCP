@@ -1,5 +1,31 @@
 # Develop NeoCP
 
+## On macOS, with just
+
+The `justfile` supports macOS only. You need [just](https://just.systems/), [uv](https://docs.astral.sh/uv/) and Node.js 20 or later.
+
+1. Check the tools:
+
+   ```bash
+   just check
+   ```
+
+2. Run the tests. The recipe creates `.venv` with Python 3.12 first.
+
+   ```bash
+   just test
+   ```
+
+3. Make sure that the generated MIDI Remote script matches the template:
+
+   ```bash
+   just check-script
+   ```
+
+Run `just` to list all recipes.
+
+## On other platforms
+
 1. Install the package in editable mode, with the development dependencies:
 
    ```bash
