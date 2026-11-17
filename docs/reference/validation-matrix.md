@@ -9,7 +9,7 @@ The table has one row for each of the 87 tools. The "Needs" column tells you wha
 | Column | Operating system | Cubase version | NeoCP version | Date | Tester |
 |---|---|---|---|---|---|
 | macOS / Cubase 15 | | | | | |
-| macOS / Cubase 16 | | | | | |
+| macOS / Cubase 16 | macOS 27.2 | Cubase 16 | 1.3.4 | 2026-11-17 | fork maintainer |
 | Windows / Cubase 15 | | | | | |
 | Windows / Cubase 16 | | | | | |
 
@@ -54,19 +54,19 @@ Record the output of `neocp-install --selftest` for each environment.
 
 | Group | Tool | Needs | macOS / Cubase 15 | macOS / Cubase 16 | Windows / Cubase 15 | Windows / Cubase 16 | Notes |
 |---|---|---|---|---|---|---|---|
-| Connection and session | `connection_status` | Cubase | not run | not run | not run | not run | |
+| Connection and session | `connection_status` | Cubase | not run | pass | not run | not run | |
 | Connection and session | `reconnect` | Cubase | not run | not run | not run | not run | |
-| Connection and session | `get_session_info` | Cubase | not run | not run | not run | not run | |
-| Connection and session | `list_tracks` | Cubase | not run | not run | not run | not run | |
-| Connection and session | `get_track_info` | Cubase | not run | not run | not run | not run | |
+| Connection and session | `get_session_info` | Cubase | not run | fail | not run | not run | Timed out on the handshake on the first call of a session. Not tried again after the connection worked. |
+| Connection and session | `list_tracks` | Cubase | not run | pass | not run | not run | 9 tracks with names. |
+| Connection and session | `get_track_info` | Cubase | not run | pass | not run | not run | Track name matched without regard to case. |
 | Connection and session | `get_selected_track_info` | Cubase | not run | not run | not run | not run | |
-| Connection and session | `review_project` | Cubase | not run | not run | not run | not run | |
+| Connection and session | `review_project` | Cubase | not run | pass | not run | not run | Found the armed track, all tracks panned center, no sends. |
 | Diagnostics | `run_selftest` | Cubase | not run | not run | not run | not run | |
 | Diagnostics | `bind_new_command` | Cubase | not run | not run | not run | not run | |
 | Transport | `transport` | Cubase | not run | not run | not run | not run | |
-| Transport | `get_transport_state` | Cubase | not run | not run | not run | not run | |
+| Transport | `get_transport_state` | Cubase | not run | pass | not run | not run | |
 | Transport | `set_tempo` | Cubase | not run | not run | not run | not run | |
-| Transport | `set_position` | Cubase | not run | not run | not run | not run | |
+| Transport | `set_position` | Cubase | not run | pass | not run | not run | |
 | Transport | `set_loop_range` | Cubase | not run | not run | not run | not run | |
 | Transport | `set_cycle` | Cubase | not run | not run | not run | not run | |
 | Transport | `set_metronome` | Cubase | not run | not run | not run | not run | |
@@ -135,9 +135,17 @@ Record the output of `neocp-install --selftest` for each environment.
 | Closed-loop mixing | `fix_resonances` | Cubase, loopback audio | not run | not run | not run | not run | |
 | Closed-loop mixing | `match_loudness` | Cubase, loopback audio | not run | not run | not run | not run | |
 | Closed-loop mixing | `auto_mix_pass` | Cubase, loopback audio | not run | not run | not run | not run | |
-| Automation | `write_automation` | Cubase | not run | not run | not run | not run | |
+| Automation | `write_automation` | Cubase | not run | partial | not run | not run | A linear 4-bar volume fade written with beat points: 232 values, at most 6.7 ms late. Two problems: see Findings. |
 | Automation | `clear_automation` | Cubase | not run | not run | not run | not run | |
 | Automation | `set_automation_mode` | Cubase | not run | not run | not run | not run | |
 | Production | `produce_song` | Cubase, notes setup | not run | not run | not run | not run | |
-| Advanced | `list_controls` | Cubase | not run | not run | not run | not run | |
+| Advanced | `list_controls` | Cubase | not run | pass | not run | not run | Read the volume value and display at several bars. |
 | Advanced | `set_control` | Cubase | not run | not run | not run | not run | |
+
+## Findings
+
+### macOS / Cubase 16
+
+1. `write_automation` with `shape="fade_out"` and `curve="linear"` gives a curved fade when the target is in dB. The dry-run preview showed it; writing uses the same curve. The code changes a `"linear"` curve to `"exp"` for dB targets. The default value is also `"linear"`, so an explicit request for a linear fade is not possible with this shape. Workaround: use `points`.
+2. `write_automation` with points that use `"bar"` and no `start_bar` writes a flat line. A `"bar"` point is relative to `start_bar`, which defaults to 1. Points outside the window of `bars` are dropped with no warning. Workaround: set `start_bar`, or use `"beat"` points.
+3. NeoCP cannot rename a track. This is a known limit of the MIDI Remote API. See [Limitations](limitations.md).
