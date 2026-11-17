@@ -2,14 +2,16 @@
 
 The self-test checks each NeoCP function against the running Cubase. It restores every value that it changes.
 
-1. Start Cubase with a project open.
-2. Run:
+1. Start Cubase with a project open. The project must have at least one track, and a track must be selected. On an empty project, the track, DirectAccess and plug-in checks fail.
+2. Ask Claude: "Run the NeoCP self-test."
+
+   On Windows, or on macOS with permanent IAC ports, you can also run the self-test from a terminal:
 
    ```bash
    neocp-install --selftest
    ```
 
-   Or ask Claude: "Run the NeoCP self-test."
+   On macOS without IAC ports, the terminal command cannot reach Cubase. The command creates new virtual ports, and Cubase stays connected to the ports of the server that Claude started.
 
 3. Read the result. For each failure, the result tells you how to fix it.
 

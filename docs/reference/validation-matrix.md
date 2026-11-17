@@ -9,37 +9,39 @@ The table has one row for each of the 87 tools. The "Needs" column tells you wha
 | Column | Operating system | Cubase version | NeoCP version | Date | Tester |
 |---|---|---|---|---|---|
 | macOS / Cubase 15 | | | | | |
-| macOS / Cubase 16 | macOS 27.2 | Cubase 16 | 1.3.4 | 2026-11-17 | fork maintainer |
+| macOS / Cubase 16 | macOS 27.2 | Cubase 16.0.5 | 1.3.4 | 2026-11-17 | fork maintainer |
 | Windows / Cubase 15 | | | | | |
 | Windows / Cubase 16 | | | | | |
 
 ## Self-test
 
-Record the output of `neocp-install --selftest` for each environment.
+Record the output of the self-test for each environment. [Run the self-test](../how-to/run-self-test.md) tells you how to run it.
+
+The macOS / Cubase 16 results come from `run_selftest` called by Claude, with a project that had two tracks and a selected track.
 
 | Self-test check | macOS / Cubase 15 | macOS / Cubase 16 | Windows / Cubase 15 | Windows / Cubase 16 |
 |---|---|---|---|---|
-| handshake | not run | not run | not run | not run |
-| script version | not run | not run | not run | not run |
-| host | not run | not run | not run | not run |
-| idle callbacks | not run | not run | not run | not run |
-| write mode | not run | not run | not run | not run |
-| tracks mirrored | not run | not run | not run | not run |
-| selected track | not run | not run | not run | not run |
-| tempo read | not run | not run | not run | not run |
-| tempo write | not run | not run | not run | not run |
-| cursor read | not run | not run | not run | not run |
-| round trip | not run | not run | not run | not run |
-| value write (NRPN) | not run | not run | not run | not run |
-| value write (SysEx) | not run | not run | not run | not run |
-| display strings | not run | not run | not run | not run |
-| commands bound | not run | not run | not run | not run |
-| transport toggle | not run | not run | not run | not run |
-| DirectAccess | not run | not run | not run | not run |
-| plug-in manager | not run | not run | not run | not run |
-| notes port | not run | not run | not run | not run |
-| audio capture | not run | not run | not run | not run |
-| loopback for listening | not run | not run | not run | not run |
+| handshake | not run | pass | not run | not run |
+| script version | not run | pass (versions match) | not run | not run |
+| host | not run | pass | not run | not run |
+| idle callbacks | not run | pass | not run | not run |
+| write mode | not run | not reported | not run | not run |
+| tracks mirrored | not run | pass | not run | not run |
+| selected track | not run | pass | not run | not run |
+| tempo read | not run | pass | not run | not run |
+| tempo write | not run | pass | not run | not run |
+| cursor read | not run | pass | not run | not run |
+| round trip | not run | pass | not run | not run |
+| value write (NRPN) | not run | pass | not run | not run |
+| value write (SysEx) | not run | pass | not run | not run |
+| display strings | not run | pass | not run | not run |
+| commands bound | not run | pass (1254 of 1454) | not run | not run |
+| transport toggle | not run | pass | not run | not run |
+| DirectAccess | not run | pass | not run | not run |
+| plug-in manager | not run | pass | not run | not run |
+| notes port | not run | pass | not run | not run |
+| audio capture | not run | pass | not run | not run |
+| loopback for listening | not run | n/a (no BlackHole) | not run | not run |
 
 ## Installers
 
@@ -149,3 +151,6 @@ Record the output of `neocp-install --selftest` for each environment.
 1. `write_automation` with `shape="fade_out"` and `curve="linear"` gives a curved fade when the target is in dB. The dry-run preview showed it; writing uses the same curve. The code changes a `"linear"` curve to `"exp"` for dB targets. The default value is also `"linear"`, so an explicit request for a linear fade is not possible with this shape. Workaround: use `points`.
 2. `write_automation` with points that use `"bar"` and no `start_bar` writes a flat line. A `"bar"` point is relative to `start_bar`, which defaults to 1. Points outside the window of `bars` are dropped with no warning. Workaround: set `start_bar`, or use `"beat"` points.
 3. NeoCP cannot rename a track. This is a known limit of the MIDI Remote API. See [Limitations](limitations.md).
+4. The self-test fails on an empty project. With no tracks, these checks fail: tracks mirrored, selected track, DirectAccess, and plug-in manager. The value-write checks do not run. Workaround: open a project with at least one track, and select a track.
+5. On macOS, `neocp-install --selftest` from a terminal cannot reach Cubase without permanent IAC ports. The command creates new virtual ports, and Cubase stays connected to the ports of the server that Claude started. Workaround: ask Claude to run the self-test, or create the IAC ports. See [Set up the MIDI ports](../how-to/set-up-midi-ports.md).
+6. Cubase 16 binds 1254 of the 1454 commands in the catalog. Nobody has checked which 200 commands are missing.
